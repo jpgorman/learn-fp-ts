@@ -1,0 +1,18 @@
+import {flow, pipe} from "fp-ts/function"
+import * as E from "fp-ts/Either"
+import * as Password from "./password"
+import crypto from "crypto"
+
+const pipeline = flow(
+  Password.of,
+  Password.validate({minLength: 8, capitalLetterRequired: true}),
+  E.chainW(
+    Password.hash((value) => {
+      return E.right(crypto.createHash("md5").update(value).digest("hex"))
+    })
+  )
+)
+
+const res = pipe("Password123", pipeline, E.getOrElse(() => undefined))
+
+console.log(res)
